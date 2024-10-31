@@ -7,3 +7,9 @@ venv/
 # Ignore data directory (if not already added)
 data/
 
+# Python cache files
+__pycache__/
+
+# MacOS-specific files
+.DS_Store
+
