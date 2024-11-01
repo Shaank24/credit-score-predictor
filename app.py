@@ -42,14 +42,10 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
     # Remove extra columns not in expected_features
     input_encoded = input_encoded[expected_features]
 
-    # **New code to inspect feature names**
-    st.write("Scaler's expected feature names:")
-    st.write(list(scaler_X.feature_names_in_))
-
+    input_encoded = input_encoded[scaler_X.feature_names_in_]
+    
     st.write("Input encoded feature names:")
     st.write(list(input_encoded.columns))
-
-    input_encoded = input_encoded[scaler_X.feature_names_in_]
 
     # Scale features
     input_scaled_array = scaler_X.transform(input_encoded)
@@ -58,7 +54,7 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
 
     input_scaled = input_scaled[model.feature_names_in_]
 
-    return input_scaled, input_encoded
+    return input_scaled
 
 # Load model and preprocessing objects
 model, encoder, scaler_X, expected_features = load_model_and_scalers()
@@ -77,7 +73,7 @@ st.header('Enter Customer Details')
 income = st.number_input('Annual Income', min_value=0, value=50000)
 savings = st.number_input('Savings', min_value=0, value=10000)
 debt = st.number_input('Debt', min_value=0, value=5000)
-cat_gambling = st.selectbox('Gambling Category', options=['No', 'Low', 'High'])
+cat_gambling = st.selectbox('Gambling Category', options=['High', 'Low', 'No'])
 cat_credit_card = st.selectbox('Has Credit Card?', options=[0, 1])
 cat_mortgage = st.selectbox('Has Mortgage?', options=[0, 1])
 cat_savings_account = st.selectbox('Has Savings Account?', options=[0, 1])
@@ -117,11 +113,14 @@ for feature in transaction_features:
 if st.button('Predict Credit Score'):
     try:
         # Preprocess the input
-        input_scaled, input_encoded = preprocess_user_input(user_input, encoder, scaler_X, expected_features)
+        input_scaled  = preprocess_user_input(user_input, encoder, scaler_X, expected_features)
 	
         # Display the input features and scaled values
         st.write("Input DataFrame feature names:")
         st.write(list(input_scaled.columns))
+
+        st.write("Encoder categories for CAT_GAMBLING:")
+        st.write(encoder.categories_)
 
         # Display the model's expected feature names
         model_feature_names = model.feature_names_in_
