@@ -1,43 +1,52 @@
-# app.py
-
 import streamlit as st
 import pandas as pd
-import joblib
 import numpy as np
+import joblib
+import os
 
-# Load the trained model and preprocessing objects
-model = joblib.load('models/credit_score_model.pkl')
-encoder = joblib.load('models/encoder.pkl')
-scaler = joblib.load('models/scaler.pkl')
-expected_features = joblib.load('models/expected_features.pkl')
+def load_model_and_scalers():
+    # Load the trained model and preprocessing objects
+    model = joblib.load(os.path.join('models', 'credit_score_model.pkl'))
+    encoder = joblib.load(os.path.join('models', 'encoder.pkl'))
+    scaler_X = joblib.load(os.path.join('models', 'scaler_X.pkl'))
+    scaler_y = joblib.load(os.path.join('models', 'scaler_y.pkl'))
+    expected_features = joblib.load(os.path.join('models', 'expected_features.pkl'))
+    return model, encoder, scaler_X, scaler_y, expected_features
 
-# Function to preprocess user input
-def preprocess_user_input(input_data):
-	df = pd.DataFrame([input_data])
+def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
+    # Convert user input into DataFrame
+    input_df = pd.DataFrame([user_input])
+    
+    # Encode categorical features
+    input_encoded, _ = encode_categorical_features(input_df, encoder)
+    
+    # Ensure the DataFrame has all expected features
+    for col in expected_features:
+        if col not in input_encoded.columns:
+            input_encoded[col] = 0  # Add missing columns with default value 0
+    
+    # Reorder columns to match the training data
+    input_encoded = input_encoded[expected_features]
+    
+    # Scale features
+    input_scaled = scaler_X.transform(input_encoded)
+    
+    return input_scaled
 
-	# Encode categorical variables
-	categorical_cols = ['CAT_GAMBLING']  # Replace with your actual categorical columns
-	if categorical_cols:
-		encoded_array = encoder.transform(df[categorical_cols])
-		encoded_df = pd.DataFrame(encoded_array, columns=encoder.get_feature_names_out(categorical_cols))
-		df = df.drop(categorical_cols, axis=1)
-		df_encoded = pd.concat([df.reset_index(drop=True), encoded_df], axis=1)
-	else:
-		df_encoded = df
+def encode_categorical_features(X, encoder):
+    categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()
+    
+    if not categorical_cols:
+        return X, encoder
+    
+    encoded_cols = encoder.transform(X[categorical_cols])
+    encoded_df = pd.DataFrame(encoded_cols, columns=encoder.get_feature_names_out(categorical_cols))
+    X = X.drop(categorical_cols, axis=1)
+    X = pd.concat([X.reset_index(drop=True), encoded_df.reset_index(drop=True)], axis=1)
+    return X, encoder
 
-	# Ensure all expected features are present
-	for col in expected_features:
-        	if col not in df_encoded.columns:
-            		df_encoded[col] = 0
-
-    	# Reorder columns to match training data
-	df_encoded = df_encoded[expected_features]
-
-    	# Scale features
-	df_scaled = scaler.transform(df_encoded)
-	df_scaled = pd.DataFrame(df_scaled, columns=expected_features)
-
-	return df_scaled
+# Load model and preprocessing objects
+model, encoder, scaler_X, scaler_y, expected_features = load_model_and_scalers()
 
 # Streamlit app layout
 st.title('Credit Score Predictor')
@@ -62,9 +71,13 @@ user_input = {
 
 if st.button('Predict Credit Score'):
     # Preprocess the input
-    input_preprocessed = preprocess_user_input(user_input)
-
+    input_scaled = preprocess_user_input(user_input, encoder, scaler_X, expected_features)
+    
     # Make prediction
-    prediction = model.predict(input_preprocessed)
-    st.success(f'Predicted Credit Score: {prediction[0]:.2f}')
+    prediction_scaled = model.predict(input_scaled)
+    
+    # Inverse transform to get original scale
+    prediction = scaler_y.inverse_transform(prediction_scaled.reshape(-1, 1))
+    
+    st.success(f'Predicted Credit Score: {prediction[0][0]:.2f}')
 
