@@ -8,7 +8,7 @@ import joblib
 def load_preprocessed_data():
     """Load preprocessed features and target variable."""
     X = pd.read_csv('data/X_preprocessed.csv')
-    y = pd.read_csv('data/y_preprocessed.csv')
+    y = pd.read_csv('data/y_preprocessed.csv').squeeze()
 
     # Ensure y is a panda Series
     if isinstance(y, pd.DataFrame):
@@ -37,7 +37,7 @@ def train_linear_regression(X_train, y_train):
 
 def save_model(model, model_name):
     """Save the trained model to the models directory."""
-    model_path = f'models/{model_name}'
+    model_path = os.path.join('models', model_name)
     joblib.dump(model, model_path)
 
 if __name__ == "__main__":
