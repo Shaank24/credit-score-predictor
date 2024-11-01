@@ -16,7 +16,7 @@ def preprocess_user_input(input_data):
 	df = pd.DataFrame([input_data])
 
 	# Encode categorical variables
-	categorical_cols = ['col1', 'col2']  # Replace with your actual categorical columns
+	categorical_cols = ['CAT_GAMBLING']  # Replace with your actual categorical columns
 	if categorical_cols:
 		encoded_array = encoder.transform(df[categorical_cols])
 		encoded_df = pd.DataFrame(encoded_array, columns=encoder.get_feature_names_out(categorical_cols))
@@ -45,16 +45,18 @@ st.title('Credit Score Predictor')
 st.header('Enter Customer Details')
 
 # Collect user input
-age = st.number_input('Age', min_value=18, max_value=100, value=30)
-gender = st.selectbox('Gender', options=['Male', 'Female'])
 income = st.number_input('Annual Income', min_value=0, value=50000)
+savings = st.number_input('Savings', min_value=0, value=10000)
+debt = st.number_input('Debt', min_value=0, value=5000)
+cat_gambling = st.selectbox('Gambling Category', options=['none', 'low', 'high'])
 # Add input fields for all required features
 
 # Create a dictionary of user input
 user_input = {
-    'Age': age,
-    'Gender': gender,
-    'Income': income,
+    'INCOME': income,
+    'SAVINGS': savings,
+    'DEBT': debt,
+    'CAT_GAMBLING': cat_gambling,
     # Add other features accordingly
 }
 
