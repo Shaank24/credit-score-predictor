@@ -1,4 +1,5 @@
 import streamlit as st
+import traceback
 import pandas as pd
 import numpy as np
 import joblib
@@ -41,13 +42,31 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
     # Remove extra columns not in expected_features
     input_encoded = input_encoded[expected_features]
 
-    # Scale features
-    input_scaled = scaler_X.transform(input_encoded)
+    # **New code to inspect feature names**
+    st.write("Scaler's expected feature names:")
+    st.write(list(scaler_X.feature_names_in_))
 
-    return input_scaled
+    st.write("Input encoded feature names:")
+    st.write(list(input_encoded.columns))
+
+    input_encoded = input_encoded[scaler_X.feature_names_in_]
+
+    # Scale features
+    input_scaled_array = scaler_X.transform(input_encoded)
+
+    input_scaled = pd.DataFrame(input_scaled_array, columns=scaler_X.feature_names_in_)
+
+    input_scaled = input_scaled[model.feature_names_in_]
+
+    return input_scaled, input_encoded
 
 # Load model and preprocessing objects
 model, encoder, scaler_X, expected_features = load_model_and_scalers()
+
+model_feature_names = model.feature_names_in_
+
+st.write("Model's expected feature names:")
+st.write(list(model_feature_names))
 
 # Streamlit app layout
 st.title('Credit Score Predictor')
@@ -58,7 +77,7 @@ st.header('Enter Customer Details')
 income = st.number_input('Annual Income', min_value=0, value=50000)
 savings = st.number_input('Savings', min_value=0, value=10000)
 debt = st.number_input('Debt', min_value=0, value=5000)
-cat_gambling = st.selectbox('Gambling Category', options=['none', 'low', 'high'])
+cat_gambling = st.selectbox('Gambling Category', options=['No', 'Low', 'High'])
 cat_credit_card = st.selectbox('Has Credit Card?', options=[0, 1])
 cat_mortgage = st.selectbox('Has Mortgage?', options=[0, 1])
 cat_savings_account = st.selectbox('Has Savings Account?', options=[0, 1])
@@ -98,15 +117,16 @@ for feature in transaction_features:
 if st.button('Predict Credit Score'):
     try:
         # Preprocess the input
-        input_scaled = preprocess_user_input(user_input, encoder, scaler_X, expected_features)
+        input_scaled, input_encoded = preprocess_user_input(user_input, encoder, scaler_X, expected_features)
 	
-	input_encoded = pd.DataFrame([user_input])
-	input_encoded, _ = encode_categorical_features(input_encoded, encoder)
-	input_encoded = input_encoded[expected_features]
-
         # Display the input features and scaled values
-        st.write("Features used for prediction:")
-        st.write(list(input_encoded.columns))
+        st.write("Input DataFrame feature names:")
+        st.write(list(input_scaled.columns))
+
+        # Display the model's expected feature names
+        model_feature_names = model.feature_names_in_
+        st.write("Model's expected feature names:")
+        st.write(list(model_feature_names))
 
         st.write("Expected features:")
         st.write(expected_features) 
@@ -119,4 +139,5 @@ if st.button('Predict Credit Score'):
         st.success(f'Predicted Credit Score: {prediction[0]:.2f}')
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")
+        st.error(traceback.format_exc())	
 
