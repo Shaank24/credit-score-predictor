@@ -32,15 +32,8 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
     # Convert user input into DataFrame
     input_df = pd.DataFrame([user_input])
 
-    st.write("Input DataFrame before encoding:")
-    st.write(input_df)
-
-
     # Encode categorical features
     input_encoded, _ = encode_categorical_features(input_df, encoder)
-
-    st.write("Input Encoded DataFrame:")
-    st.write(input_encoded)
    
     X_train_means = pd.read_csv('data/X_preprocessed.csv').mean()
     for col in expected_features:
@@ -50,9 +43,6 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
     # Remove extra columns not in expected_features
     input_encoded = input_encoded[expected_features]
   
-    st.write("Input encoded feature names:")
-    st.write(list(input_encoded.columns))
-
     # Scale features
     input_scaled_array = scaler_X.transform(input_encoded)
 
@@ -62,10 +52,6 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
 
 # Load model and preprocessing objects
 model, encoder, scaler_X, expected_features = load_model_and_scalers()
-
-st.write("Encoder categories:")
-st.write(encoder.categories_)
-
 
 # Streamlit app layout
 st.title('Credit Score Predictor')
@@ -112,22 +98,6 @@ if st.button('Predict Credit Score'):
         # Preprocess the input
         input_scaled  = preprocess_user_input(user_input, encoder, scaler_X, expected_features)
 	
-        # Display the input features and scaled values
-        st.write("Input DataFrame feature names:")
-        st.write(list(input_scaled.columns))
-
-        st.write("Encoder categories for CAT_GAMBLING:")
-        st.write(encoder.categories_)
-
-        # Display the model's expected feature names
-        model_feature_names = model.feature_names_in_
-        st.write("Model's expected feature names:")
-        st.write(list(model_feature_names))
-
-        st.write("Expected features:")
-        st.write(expected_features) 
-
-
         # Make prediction
         prediction = model.predict(input_scaled)
 
