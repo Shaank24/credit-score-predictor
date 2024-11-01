@@ -32,18 +32,24 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
     # Convert user input into DataFrame
     input_df = pd.DataFrame([user_input])
 
+    st.write("Input DataFrame before encoding:")
+    st.write(input_df)
+
+
     # Encode categorical features
     input_encoded, _ = encode_categorical_features(input_df, encoder)
 
+    st.write("Input Encoded DataFrame:")
+    st.write(input_encoded)
+   
+    X_train_means = pd.read_csv('data/X_preprocessed.csv').mean()
     for col in expected_features:
     	if col not in input_encoded.columns:
-    		input_encoded[col] = 0 # Assign default values for missing features
+    		input_encoded[col] = X_train_means.get(col, 0)  # Assign default values for missing features
 
     # Remove extra columns not in expected_features
     input_encoded = input_encoded[expected_features]
-
-    input_encoded = input_encoded[scaler_X.feature_names_in_]
-    
+  
     st.write("Input encoded feature names:")
     st.write(list(input_encoded.columns))
 
@@ -52,17 +58,14 @@ def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
 
     input_scaled = pd.DataFrame(input_scaled_array, columns=scaler_X.feature_names_in_)
 
-    input_scaled = input_scaled[model.feature_names_in_]
-
     return input_scaled
 
 # Load model and preprocessing objects
 model, encoder, scaler_X, expected_features = load_model_and_scalers()
 
-model_feature_names = model.feature_names_in_
+st.write("Encoder categories:")
+st.write(encoder.categories_)
 
-st.write("Model's expected feature names:")
-st.write(list(model_feature_names))
 
 # Streamlit app layout
 st.title('Credit Score Predictor')
@@ -103,12 +106,6 @@ user_input = {
     # Include other features as needed
 }
 
-# Assign default values or collect inputs for transaction features
-# For demonstration, we'll use training data means
-X_train_means = pd.read_csv('data/X_preprocessed.csv').mean()
-transaction_features = [col for col in expected_features if col not in user_input]
-for feature in transaction_features:
-    user_input[feature] = X_train_means.get(feature, 0)
 
 if st.button('Predict Credit Score'):
     try:
