@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 import joblib
 
 def load_data(file_path):
@@ -16,7 +16,7 @@ def encode_categorical_features(X, encoder=None):
         return X, encoder
     
     if encoder is None:
-        encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
+        encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
         encoded_cols = encoder.fit_transform(X[categorical_cols])
     else:
         encoded_cols = encoder.transform(X[categorical_cols])
