@@ -45,12 +45,12 @@ def preprocess_data(filepath):
 
 if __name__ == "__main__":
     # File path to the dataset
-    filepath = '../data/credit_score.csv'
+    filepath = 'data/credit_score.csv'
 
     # Preprocess the data
     X_scaled, y = preprocess_data(filepath)
 
     # Save the preprocessed data
-    X_scaled.to_csv('../data/X_preprocessed.csv', index=False)
-    y.to_csv('../data/y_preprocessed.csv', index=False)
+    X_scaled.to_csv('data/X_preprocessed.csv', index=False)
+    y.to_csv('data/y_preprocessed.csv', index=False)
 
