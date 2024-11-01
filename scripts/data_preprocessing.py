@@ -27,7 +27,6 @@ def encode_categorical_features(X, encoder=None):
     return X, encoder
 
 def scale_features(X, scaler=None):
-    from sklearn.preprocessing import StandardScaler
     if scaler is None:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
@@ -61,13 +60,10 @@ def preprocess_data(file_path):
     X_scaled, scaler_X = scale_features(X_encoded)
     joblib.dump(scaler_X, 'models/scaler_X.pkl')
     
-    # Scale target variable
-    y = y.values.reshape(-1, 1)
-    scaler_y = StandardScaler()
-    y_scaled = scaler_y.fit_transform(y)
-    joblib.dump(scaler_y, 'models/scaler_y.pkl')
-    
-    return X_scaled, y_scaled
+  
+    y = y.values
+  
+    return X_scaled, y
 
 if __name__ == "__main__":
     # Define the file path

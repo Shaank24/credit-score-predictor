@@ -50,3 +50,5 @@ if __name__ == "__main__":
     print(f"Root Mean Squared Error (RMSE): {rmse:.2f}")
     print(f"R-squared (R2) Score: {r2:.2f}")
 
+    print("Sample Predictions:", y_pred[:5])
+    print("Actual Values:", y_test[:5])

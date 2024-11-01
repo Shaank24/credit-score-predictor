@@ -9,9 +9,8 @@ def load_model_and_scalers():
     model = joblib.load(os.path.join('models', 'credit_score_model.pkl'))
     encoder = joblib.load(os.path.join('models', 'encoder.pkl'))
     scaler_X = joblib.load(os.path.join('models', 'scaler_X.pkl'))
-    scaler_y = joblib.load(os.path.join('models', 'scaler_y.pkl'))
     expected_features = joblib.load(os.path.join('models', 'expected_features.pkl'))
-    return model, encoder, scaler_X, scaler_y, expected_features
+    return model, encoder, scaler_X, expected_features
 
 def preprocess_user_input(user_input, encoder, scaler_X, expected_features):
     # Convert user input into DataFrame
@@ -46,7 +45,7 @@ def encode_categorical_features(X, encoder):
     return X, encoder
 
 # Load model and preprocessing objects
-model, encoder, scaler_X, scaler_y, expected_features = load_model_and_scalers()
+model, encoder, scaler_X, expected_features = load_model_and_scalers()
 
 # Streamlit app layout
 st.title('Credit Score Predictor')
@@ -73,11 +72,9 @@ if st.button('Predict Credit Score'):
     # Preprocess the input
     input_scaled = preprocess_user_input(user_input, encoder, scaler_X, expected_features)
     
+    
     # Make prediction
-    prediction_scaled = model.predict(input_scaled)
+    prediction = model.predict(input_scaled)
     
-    # Inverse transform to get original scale
-    prediction = scaler_y.inverse_transform(prediction_scaled.reshape(-1, 1))
-    
-    st.success(f'Predicted Credit Score: {prediction[0][0]:.2f}')
+    st.success(f'Predicted Credit Score: {prediction[0]:.2f}')
 
