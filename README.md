@@ -16,3 +16,6 @@ This project aims to develop a machine learning model to predict customers' cred
    ```bash
    git clone https://github.com/yourusername/credit-score-predictor.git
 
+2. **Run program:**
+    ```bash
+    streamlit run app.py
